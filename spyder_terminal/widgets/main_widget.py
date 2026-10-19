@@ -194,7 +194,7 @@ class TerminalMainWidget(PluginMainWidget):
             TerminalMainWidgetActions.NewTerminalForCWD,
             text=_("New terminal in current working directory"),
             tip=_("Sets the pwd at the current working directory"),
-            triggered=lambda: self.create_new_term(),
+            triggered=lambda: self.create_new_term(path=self.current_cwd),
             shortcut_context="terminal",
             register_shortcut=True,
         )
@@ -443,10 +443,13 @@ class TerminalMainWidget(PluginMainWidget):
         self, name=None, give_focus=True, path=None, config_id=None
     ):
         """Add a new terminal tab."""
+        # By default, the project's directory if there's one. Explicit paths
+        # (e.g. the current working directory) are used even with a project
         if path is None:
-            path = self.current_cwd
-        if self.project_path is not None:
-            path = self.project_path
+            if self.project_path is not None:
+                path = self.project_path
+            else:
+                path = self.current_cwd
         path = path.replace("\\", "/")
         term = TerminalWidget(
             self,
