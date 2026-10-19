@@ -20,7 +20,8 @@
     "promise-polyfill": "latest"
   },
   "engines": {
-    "yarn": ">=1.22.22"
+    "node": ">=18",
+    "npm": ">=9"
   },
   "scripts": {
     "webpack": "webpack --config webpack.config.js",
