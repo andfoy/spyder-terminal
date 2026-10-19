@@ -495,3 +495,29 @@ def test_zoom_new_term(setup_terminal, qtbot_module):
     new_zoom = term.get_conf("zoom")
 
     assert term1_zoom == new_zoom
+
+
+@pytest.mark.skipif(os.name == 'nt', reason="Uses printf")
+def test_exec_cmd_quotes(setup_terminal, qtbot_module):
+    """Commands with quotes and backslashes run as they are."""
+    terminal = setup_terminal
+    widget = terminal.get_widget()
+    widget.create_new_term()
+    term = widget.get_current_term()
+    with qtbot_module.waitSignal(term.terminal_ready, timeout=TERM_UP):
+        pass
+    qtbot_module.wait(2000)
+    term.exec_cmd("""printf 'OUT:%s\\n' "it's \\"quoted\\"" 'back\\slash'""")
+
+    def has_output():
+        result = []
+        term.view.document.runJavaScript(
+            "spyder_terminal.default.getTerminalLines()", result.append)
+        qtbot_module.waitUntil(lambda: bool(result), timeout=5000)
+
+        # Rows come padded with spaces, without newlines. The command
+        # itself doesn't contain the "OUT:" prefix followed by the text.
+        text = result[0] or ""
+        return 'OUT:it\'s "quoted"' in text and 'OUT:back\\slash' in text
+
+    qtbot_module.waitUntil(has_output, timeout=10000)

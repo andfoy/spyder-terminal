@@ -304,7 +304,9 @@ class TerminalWidget(QFrame, SpyderWidgetMixin):
 
     def exec_cmd(self, cmd):
         """Execute a command inside the terminal."""
-        self.eval_javascript('exec("{0}")'.format(cmd))
+        # JSON strings are valid Javascript strings, with quotes, backslashes
+        # and newlines escaped
+        self.eval_javascript('exec({0})'.format(json.dumps(cmd)))
 
     def exec_delayed_cmd(self, cmd, text_trigger, delay=1500):
         """
@@ -320,7 +322,9 @@ class TerminalWidget(QFrame, SpyderWidgetMixin):
             Milliseconds to wait to execute. The default is 1500.
         """
         self.eval_javascript(
-            'exec_delayed("{0}", "{1}", {2})'.format(cmd, text_trigger, delay)
+            'exec_delayed({0}, {1}, {2})'.format(
+                json.dumps(cmd), json.dumps(text_trigger), int(delay)
+            )
         )
 
     def reload(self):
