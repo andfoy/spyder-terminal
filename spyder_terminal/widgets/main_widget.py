@@ -166,8 +166,6 @@ class TerminalMainWidget(PluginMainWidget):
             self.server.setStandardOutputFile(self.stdout_file)
             self.server.setStandardErrorFile(self.stderr_file)
         self.server.start(server_args[0], server_args[1:])
-        self.color_scheme = self.get_conf("appearance", "ui_theme")
-        self.theme = self.get_conf("appearance", "selected")
 
         # Menu
         menu = self.get_options_menu()
@@ -455,8 +453,6 @@ class TerminalMainWidget(PluginMainWidget):
             self.port,
             path=path,
             font=self.font.family(),
-            theme=self.theme,
-            color_scheme=self.color_scheme,
             config_id=config_id,
         )
         self.add_tab(term)
