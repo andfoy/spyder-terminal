@@ -497,6 +497,61 @@ def test_zoom_new_term(setup_terminal, qtbot_module):
     assert term1_zoom == new_zoom
 
 
+SCROLLBAR_STATE = """
+(function () {
+    var bar = document.querySelector(
+        '.xterm-scrollable-element > .scrollbar.vertical');
+    if (!bar) { return null; }
+    var slider = bar.querySelector('.slider');
+    var viewport = document.querySelector('.xterm-viewport');
+    return [getComputedStyle(bar).opacity, bar.offsetWidth,
+            slider ? slider.offsetHeight : 0, bar.offsetHeight,
+            getComputedStyle(bar).backgroundColor,
+            slider ? getComputedStyle(slider).backgroundColor : null,
+            viewport.offsetWidth - viewport.clientWidth];
+})()
+"""
+
+
+def css_rgb(color):
+    """CSS rgb() value of a hex color."""
+    color = color.lstrip('#')
+    return 'rgb({}, {}, {})'.format(
+        *(int(color[i:i + 2], 16) for i in (0, 2, 4)))
+
+
+@pytest.mark.skipif(os.name == 'nt', reason="Uses seq")
+def test_scrollbar_visible(setup_terminal, qtbot_module):
+    """
+    The scrollbar stays visible when there's output to scroll, like before
+    xterm 6, whose scrollbar only shows while scrolling or hovering.
+    """
+    terminal = setup_terminal
+    terminal.get_widget().resize(640, 400)
+    qtbot_module.wait(1000)
+    term = terminal.get_widget().get_current_term()
+    term.exec_cmd('seq 1 300')
+    qtbot_module.wait(2000)
+
+    result = []
+    term.view.document.runJavaScript(SCROLLBAR_STATE, result.append)
+    qtbot_module.waitUntil(lambda: bool(result), timeout=5000)
+    (opacity, width, slider_height, bar_height, track, handle,
+     native_width) = result[0]
+    assert float(opacity) == 1
+    assert width > 0
+    assert 0 < slider_height < bar_height
+
+    # It has the colors of Spyder's scrollbars in the current theme
+    from spyder.utils.palette import SpyderPalette
+    assert track == css_rgb(SpyderPalette.COLOR_BACKGROUND_1)
+    assert handle == css_rgb(SpyderPalette.COLOR_BACKGROUND_6)
+
+    # The native scrollbar of xterm's viewport, which xterm 6 doesn't use,
+    # doesn't show behind it
+    assert native_width == 0
+
+
 @pytest.mark.skipif(os.name == 'nt', reason="Uses printf")
 def test_exec_cmd_quotes(setup_terminal, qtbot_module):
     """Commands with quotes and backslashes run as they are."""

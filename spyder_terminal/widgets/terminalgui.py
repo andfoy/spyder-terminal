@@ -222,9 +222,15 @@ class TerminalWidget(QFrame, SpyderWidgetMixin):
             return self.view.eval_javascript(script)
 
     def set_scrollbar_style(self):
-        """Set terminal scrollbar style."""
-        if is_dark_interface():
-            self.eval_javascript('addClassStyleToContainer("dark-scroll")')
+        """Style the scrollbar like Spyder's, with its theme's colors."""
+        colors = {
+            'track': SpyderPalette.COLOR_BACKGROUND_1,
+            'border': SpyderPalette.COLOR_BACKGROUND_4,
+            'handle': SpyderPalette.COLOR_BACKGROUND_6,
+            'handleHover': SpyderPalette.COLOR_ACCENT_2,
+        }
+        self.eval_javascript(
+            'setScrollbarColors({})'.format(json.dumps(colors)))
 
     def set_dir(self, path):
         """Set terminal initial current working directory."""
