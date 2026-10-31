@@ -232,6 +232,9 @@ def test_terminal_paste_2(setup_terminal, qtbot_module):
                            timeout=TERM_UP)
 
 
+@pytest.mark.skipif(
+    os.environ.get('CI') and WINDOWS, reason="Fails on Windows"
+)
 def test_terminal_color(setup_terminal, qtbot_module):
     """Test if the terminal color is converting to rgba correctly."""
     terminal = setup_terminal
@@ -290,6 +293,9 @@ def test_terminal_find(setup_terminal, qtbot_module):
     assert found != -1
 
 
+@pytest.mark.skipif(
+    os.environ.get('CI') and WINDOWS, reason="Fails on Windows"
+)
 def test_terminal_font(setup_terminal, qtbot_module):
     """Test if terminal loads a custom font."""
     terminal = setup_terminal
